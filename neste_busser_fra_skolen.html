@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101416">
+  <title>Halden Bussene – iPhone</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #20302b;
+      background: #f4f6f2;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #74817a;
+      --line: #e4e9e3;
+      --green: #376d57;
+      --dark-green: #214c3b;
+      --shadow: 0 12px 30px rgb(34 58 45 / 6%);
+    }
+
+    * { box-sizing: border-box; }
+    body { min-width: 320px; margin: 0; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .page { width: min(1050px, calc(100% - 40px)); margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 0;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      background: var(--green);
+      font-size: 21px;
+    }
+    .brand-name { font-size: 15px; font-weight: 750; letter-spacing: -.025em; }
+    .brand-caption { margin-top: 2px; color: var(--muted); font-size: 12px; }
+
+    .clock {
+      color: #50645a;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+      text-transform: capitalize;
+    }
+    .clock time { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; font-weight: 400; }
+
+    main { padding: 30px 0 52px; }
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 46px); letter-spacing: -.055em; }
+    .intro { max-width: 640px; margin: 11px 0 25px; color: var(--muted); font-size: 15px; line-height: 1.65; }
+
+    .search-panel {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .search-field { position: relative; flex: 1; min-width: 0; }
+    .sr-only {
+      position: absolute;
+      overflow: hidden;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      border: 0;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+    label { display: block; margin-bottom: 8px; color: #42584d; font-size: 12px; font-weight: 700; }
+    .input-wrap { position: relative; }
+    input {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border: 1px solid #dfe6df;
+      border-radius: 11px;
+      outline: none;
+      color: #20302b;
+      background: #fbfcfa;
+    }
+    input:focus { border-color: #6b9b81; box-shadow: 0 0 0 3px rgb(55 109 87 / 12%); }
+    .search-icon { position: absolute; top: 11px; left: 13px; color: #718078; font-size: 17px; }
+
+    .button {
+      min-height: 46px;
+      padding: 0 17px;
+      border: 1px solid #dce5dd;
+      border-radius: 11px;
+      color: #345744;
+      background: white;
+      font-size: 13px;
+      font-weight: 650;
+      transition: background .2s, transform .2s;
+    }
+    .button:hover { background: #f1f6f1; transform: translateY(-1px); }
+    .button.primary { border-color: var(--green); color: white; background: var(--green); }
+    .button.primary:hover { background: var(--dark-green); }
+    .button:disabled { cursor: wait; opacity: .65; transform: none; }
+
+    .suggestions {
+      position: absolute;
+      top: calc(100% + 7px);
+      right: 0;
+      left: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 12px 30px rgb(34 58 45 / 12%);
+    }
+    .suggestions[hidden] { display: none; }
+    .suggestion {
+      display: block;
+      width: 100%;
+      padding: 11px 14px;
+      border: 0;
+      border-bottom: 1px solid #edf0ec;
+      color: #20302b;
+      background: white;
+      text-align: left;
+    }
+    .suggestion:last-child { border-bottom: 0; }
+    .suggestion:hover, .suggestion:focus { outline: none; background: #f3f7f3; }
+    .suggestion-name { font-size: 13px; font-weight: 650; }
+    .suggestion-area { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .suggestion-message { padding: 12px 14px; color: var(--muted); font-size: 12px; }
+
+    .stop-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 29px 0 14px;
+    }
+    .stop-title { display: flex; align-items: center; gap: 11px; }
+    .stop-marker {
+      display: grid;
+      width: 39px;
+      height: 39px;
+      place-items: center;
+      border-radius: 13px;
+      color: var(--green);
+      background: #e6efe7;
+      font-size: 18px;
+    }
+    .stop-title h2 { margin: 0; font-size: 19px; letter-spacing: -.035em; }
+    .stop-subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .status { color: var(--muted); font-size: 12px; text-align: right; }
+    .status.error { color: #a13e37; }
+
+    .departure-list { display: grid; gap: 11px; }
+    .departure {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .departure-main {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 17px;
+      padding: 17px 19px;
+    }
+    .line-number {
+      display: grid;
+      min-width: 58px;
+      min-height: 48px;
+      place-items: center;
+      padding: 5px;
+      border-radius: 12px;
+      color: white;
+      background: #315d49;
+      font-size: 17px;
+      font-weight: 750;
+      letter-spacing: -.02em;
+    }
+    .route { min-width: 0; }
+    .destination { overflow: hidden; font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .route-name { overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .times { display: flex; align-items: center; gap: 10px; text-align: right; }
+    .time-block { min-width: 65px; }
+    .time-label { color: var(--muted); font-size: 10px; }
+    .time-value { margin-top: 3px; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .time-value.expected { color: var(--green); }
+    .time-arrow { color: #a1ada5; font-size: 13px; }
+
+    .departure-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 19px;
+      border-top: 1px solid #edf0ec;
+      background: #fbfcfa;
+    }
+    .departure-meta-left { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: #376349;
+      background: #e9f4eb;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .badge.delayed { color: #965316; background: #fff1dc; }
+    .badge.cancelled { color: #a13e37; background: #ffebe8; }
+    .badge.scheduled { color: #637169; background: #eef1ed; }
+    .day-label { color: var(--muted); font-size: 11px; }
+    .stops-toggle {
+      padding: 4px 0 4px 8px;
+      border: 0;
+      color: #476d57;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .stops-toggle:hover { text-decoration: underline; }
+    .stops-route {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 14px 18px 16px;
+      border-top: 1px solid #edf0ec;
+      color: #5e6f65;
+      scrollbar-width: thin;
+    }
+    .stops-route[hidden] { display: none; }
+    .route-stop {
+      position: relative;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 20px;
+      padding-right: 22px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .route-stop::after {
+      width: 17px;
+      height: 1px;
+      background: #cbd6cc;
+      content: "";
+    }
+    .route-stop:last-child { padding-right: 0; }
+    .route-stop:last-child::after { display: none; }
+    .route-stop.selected { color: #244e39; font-weight: 750; }
+    .route-stop-dot { width: 7px; height: 7px; border: 1.5px solid #8da296; border-radius: 50%; }
+    .route-stop.selected .route-stop-dot { border-color: var(--green); background: var(--green); }
+
+    .message-card {
+      padding: 26px 20px;
+      border: 1px dashed #d6dfd6;
+      border-radius: 15px;
+      color: var(--muted);
+      background: rgb(255 255 255 / 65%);
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .message-card.error { color: #9c443c; }
+
+    .info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 25px;
+    }
+    .info-card { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: #fbfcfa; }
+    .info-card strong { display: block; margin-bottom: 5px; font-size: 12px; }
+    .info-card span { color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 0 25px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    footer a { color: #476d57; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 650px) {
+      .page { width: min(100% - 28px, 1050px); }
+      header { padding: 18px 0; }
+      main { padding-top: 25px; }
+      .search-panel { align-items: stretch; flex-direction: column; padding: 14px; }
+      .search-panel .button { width: 100%; }
+      .departure-main { grid-template-columns: 57px minmax(0, 1fr); gap: 12px; padding: 14px; }
+      .line-number { min-width: 52px; min-height: 44px; }
+      .times { grid-column: 2; justify-content: flex-start; margin-top: 2px; text-align: left; }
+      .time-block { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+      .time-label { font-size: 10px; }
+      .time-value { font-size: 15px; }
+      .time-arrow { margin: 0 1px; }
+      .departure-meta { align-items: flex-start; padding: 10px 14px; }
+      .stops-toggle { white-space: nowrap; }
+      .info { grid-template-columns: 1fr; gap: 8px; }
+      footer { flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .clock { font-size: 11px; }
+      .brand-caption { font-size: 10px; }
+      .stop-summary { align-items: flex-start; flex-direction: column; }
+      .status { text-align: left; }
+      .departure-meta { gap: 5px; flex-direction: column; }
+      .stops-toggle { padding-left: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
+    body {
+      display: grid;
+      min-height: 100svh;
+      overflow: hidden;
+      place-items: center;
+      color: #f7f8f6;
+      background:
+        radial-gradient(ellipse at 18% 18%, rgb(56 94 82 / 34%), transparent 42%),
+        radial-gradient(ellipse at 82% 82%, rgb(83 69 111 / 28%), transparent 40%),
+        #101416;
+    }
+
+    .phone-stage { display: grid; width: 100%; min-height: 100svh; place-items: center; }
+    .iphone {
+      position: relative;
+      width: min(430px, calc(100vw - 42px));
+      height: min(880px, calc(100svh - 36px));
+      min-height: 590px;
+      padding: 10px;
+      border: 1px solid #52575b;
+      border-radius: 54px;
+      background: linear-gradient(145deg, #64696d, #202427 18%, #090b0d 55%, #505559);
+      box-shadow: 0 34px 100px rgb(0 0 0 / 55%), inset 0 0 0 2px rgb(255 255 255 / 9%);
+      isolation: isolate;
+    }
+
+    .iphone::before {
+      position: absolute;
+      z-index: -1;
+      inset: 4px;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 49px;
+      content: "";
+      pointer-events: none;
+    }
+
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 44px;
+      background: #d9e8e2;
+      isolation: isolate;
+    }
+
+    .side-power {
+      position: absolute;
+      z-index: 4;
+      top: 145px;
+      right: -6px;
+      width: 14px;
+      height: 80px;
+      padding: 0;
+      border: 1px solid #707579;
+      border-radius: 0 5px 5px 0;
+      background: linear-gradient(90deg, #777d81, #282d30);
+      box-shadow: 3px 1px 5px rgb(0 0 0 / 40%);
+    }
+
+    .side-power:hover { filter: brightness(1.2); }
+    .side-power:focus-visible { outline: 2px solid #93d6af; outline-offset: 4px; }
+
+    .screen-off, .home-screen, .app-view { position: absolute; inset: 0; }
+    .screen-off {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #e7ece8;
+      background:
+        radial-gradient(ellipse at 52% 32%, rgb(91 124 120 / 30%), transparent 40%),
+        linear-gradient(160deg, #182927, #101718 54%, #171a24);
+      text-align: center;
+    }
+
+    .iphone[data-state="off"] .screen-off { display: flex; }
+    .iphone[data-state="off"] .home-screen,
+    .iphone[data-state="off"] .app-view { display: none; }
+    .off-time { font-size: clamp(68px, 15vw, 88px); font-weight: 250; letter-spacing: -.08em; line-height: 1; }
+    .off-date { margin-top: 12px; color: #d2ddd7; font-size: 15px; }
+    .off-brand { position: absolute; bottom: 105px; color: rgb(232 241 235 / 48%); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; }
+    .off-hint { position: absolute; bottom: 49px; color: rgb(232 241 235 / 70%); font-size: 11px; }
+
+    .home-screen {
+      display: none;
+      overflow: hidden;
+      padding: 0 22px 18px;
+      background:
+        radial-gradient(ellipse at 13% 25%, rgb(126 224 180 / 78%), transparent 44%),
+        radial-gradient(ellipse at 88% 40%, rgb(157 128 224 / 78%), transparent 43%),
+        radial-gradient(ellipse at 49% 88%, rgb(246 169 143 / 80%), transparent 50%),
+        linear-gradient(145deg, #477e88, #617cb1 47%, #283b50);
+    }
+
+    .iphone[data-state="home"] .home-screen { display: flex; flex-direction: column; }
+    .status-bar {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex: 0 0 50px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 13px;
+      color: white;
+      font-size: 12px;
+      font-weight: 750;
+      text-shadow: 0 1px 7px rgb(0 0 0 / 30%);
+    }
+
+    .status-icons { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 104px;
+      height: 29px;
+      border-radius: 999px;
+      background: #090b0d;
+      transform: translateX(-50%);
+      box-shadow: inset 0 1px 2px rgb(255 255 255 / 9%);
+    }
+
+    .home-welcome { padding: 23px 4px 20px; color: white; text-shadow: 0 2px 12px rgb(0 0 0 / 18%); }
+    .home-greeting { font-size: 12px; font-weight: 550; opacity: .88; }
+    .home-title { margin-top: 4px; font-size: 30px; font-weight: 680; letter-spacing: -.055em; }
+    .home-weather { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 12px; opacity: .92; }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-content: start;
+      gap: 20px 10px;
+      padding: 4px 0 18px;
+    }
+
+    .app-icon {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0;
+      border: 0;
+      color: white;
+      background: transparent;
+      cursor: pointer;
+      text-shadow: 0 1px 5px rgb(0 0 0 / 35%);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-icon:active .app-glyph { transform: scale(.88); }
+    .app-glyph {
+      display: grid;
+      width: 57px;
+      height: 57px;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 24%);
+      border-radius: 17px;
+      background: linear-gradient(145deg, rgb(255 255 255 / 35%), rgb(255 255 255 / 12%));
+      box-shadow: 0 7px 15px rgb(13 27 35 / 20%), inset 0 1px 1px rgb(255 255 255 / 35%);
+      font-size: 28px;
+      text-shadow: none;
+      transition: transform .12s;
+      backdrop-filter: blur(12px);
+    }
+
+    .app-icon.bus-app .app-glyph {
+      border-color: rgb(255 255 255 / 18%);
+      background: linear-gradient(145deg, #61c58b, #18835e);
+      font-size: 30px;
+    }
+
+    .app-label {
+      display: -webkit-box;
+      overflow: hidden;
+      width: 82px;
+      min-height: 22px;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      font-size: 10px;
+      font-weight: 550;
+      line-height: 1.1;
+      text-align: center;
+    }
+    .home-spacer { flex: 1; min-height: 12px; }
+    .dock {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      margin: 0 -7px 25px;
+      padding: 10px 8px;
+      border: 1px solid rgb(255 255 255 / 17%);
+      border-radius: 23px;
+      background: rgb(244 248 255 / 23%);
+      backdrop-filter: blur(20px);
+    }
+    .dock .app-icon { gap: 0; }
+    .dock .app-glyph { width: 52px; height: 52px; border-radius: 16px; }
+    .dock .app-label { display: none; }
+
+    .app-view {
+      display: none;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      color: #20302b;
+      background: #f4f6f2;
+      scrollbar-width: thin;
+    }
+
+    .iphone[data-state="app"] .app-view { display: block; }
+    .iphone[data-state="app"] .home-screen,
+    .iphone[data-state="app"] .screen-off { display: none; }
+    .app-statusbar {
+      position: sticky;
+      z-index: 5;
+      top: 0;
+      display: flex;
+      height: 47px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid rgb(228 233 227 / 80%);
+      color: #1c2722;
+      background: rgb(248 249 247 / 94%);
+      font-size: 11px;
+      font-weight: 750;
+      backdrop-filter: blur(16px);
+    }
+
+    .app-statusbar .app-status-right { display: flex; align-items: center; gap: 8px; }
+    .app-statusbar button {
+      padding: 5px 0;
+      border: 0;
+      color: #376d57;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .app-status-icons { display: flex; align-items: center; gap: 6px; }
+    .app-home {
+      position: sticky;
+      z-index: 6;
+      bottom: 10px;
+      display: block;
+      width: 92px;
+      height: 36px;
+      margin: -20px auto 12px;
+      border: 0;
+      border-radius: 999px;
+      color: white;
+      background: rgb(36 52 43 / 94%);
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgb(22 36 28 / 22%);
+      font-size: 12px;
+      font-weight: 700;
+      backdrop-filter: blur(12px);
+    }
+
+    .app-home:hover { background: #183e2d; }
+    .app-home:focus-visible { outline: 3px solid #78c994; outline-offset: 3px; }
+
+    .app-home span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .app-page { width: min(100% - 34px, 1050px); min-height: calc(100% - 47px); padding-bottom: 18px; }
+    .app-page > header { display: none; }
+    .app-page main { padding: 24px 0 30px; }
+    .app-page .intro { margin-bottom: 19px; font-size: 13px; }
+    .app-page h1 { font-size: clamp(30px, 8vw, 38px); }
+    .app-page .search-panel { padding: 13px; border-radius: 14px; }
+    .app-page .search-panel .button { min-height: 42px; }
+    .app-page .stop-summary { align-items: flex-start; flex-direction: column; margin-top: 23px; }
+    .app-page .status { text-align: left; }
+    .app-page .departure-main { grid-template-columns: 54px minmax(0, 1fr); gap: 10px; padding: 13px; }
+    .app-page .line-number { min-width: 50px; min-height: 43px; }
+    .app-page .times { grid-column: 2; justify-content: flex-start; margin-top: 1px; text-align: left; }
+    .app-page .time-block { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+    .app-page .time-value { font-size: 14px; }
+    .app-page .departure-meta { align-items: flex-start; padding: 9px 13px; }
+    .app-page .info { grid-template-columns: 1fr; gap: 7px; margin-top: 19px; }
+    .app-page footer { padding-bottom: 28px; }
+    .mini-app-page {
+      width: min(100% - 34px, 1050px);
+      min-height: calc(100% - 47px);
+      margin: 0 auto;
+      padding: 25px 0 42px;
+    }
+    .mini-app-page[hidden] { display: none; }
+    .mini-eyebrow { margin: 0 0 8px; color: #376d57; font-size: 11px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    .mini-app-page h1 { margin: 0; font-size: 31px; letter-spacing: -.05em; }
+    .mini-description { margin: 9px 0 20px; color: #74817a; font-size: 13px; line-height: 1.6; }
+    .mini-card { margin: 12px 0; padding: 17px; border: 1px solid #e4e9e3; border-radius: 17px; background: white; box-shadow: 0 12px 30px rgb(34 58 45 / 6%); }
+    .mini-muted { color: #74817a; font-size: 12px; line-height: 1.55; }
+    .mini-action { min-height: 42px; padding: 0 14px; border: 0; border-radius: 11px; color: white; background: #376d57; font-weight: 650; text-decoration: none; cursor: pointer; }
+    .mini-action.secondary { color: #345744; background: #e9f1ea; }
+    .mini-weather-temp { margin: 13px 0 4px; font-size: 64px; font-weight: 650; letter-spacing: -.07em; line-height: 1; }
+    .mini-weather-icon { float: right; font-size: 44px; }
+    .mini-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+    .mini-stat { padding: 11px; border-radius: 12px; background: #f3f6f2; }
+    .mini-stat span { display: block; color: #74817a; font-size: 10px; }
+    .mini-stat strong { display: block; margin-top: 5px; font-size: 13px; }
+    .mini-place { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #edf0ec; }
+    .mini-place:last-child { border-bottom: 0; }
+    .mini-place strong { display: block; font-size: 13px; }
+    .mini-place span { display: block; margin-top: 3px; color: #74817a; font-size: 11px; }
+    .mini-place a { flex: 0 0 auto; color: #376d57; font-size: 12px; font-weight: 650; text-decoration: none; }
+    .mini-track { display: grid; width: 76px; height: 76px; place-items: center; margin: 8px auto 16px; border-radius: 50%; color: white; background: linear-gradient(145deg, #6f91e2, #8b5ac3); font-size: 31px; }
+    .mini-player { text-align: center; }
+    .mini-player h2 { margin: 7px 0 4px; font-size: 18px; }
+    .mini-player .mini-action { margin-top: 18px; min-width: 128px; }
+    .mini-events { display: grid; gap: 9px; }
+    .mini-event { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: center; padding: 12px; border-radius: 12px; background: #f4f6f2; }
+    .mini-event time { color: #376d57; font-size: 12px; font-weight: 750; }
+    .mini-event strong { display: block; font-size: 12px; }
+    .mini-event span { display: block; margin-top: 3px; color: #74817a; font-size: 11px; }
+    .notes-area { width: 100%; min-height: 230px; padding: 14px; border: 1px solid #dfe6df; border-radius: 13px; outline: none; resize: vertical; color: #20302b; background: #fbfcfa; font: inherit; font-size: 14px; line-height: 1.6; }
+    .notes-area:focus { border-color: #6b9b81; box-shadow: 0 0 0 3px rgb(55 109 87 / 12%); }
+
+    @media (max-width: 480px), (max-height: 650px) {
+      body { display: block; }
+      .phone-stage { min-height: 100svh; }
+      .iphone {
+        width: min(430px, 100vw);
+        height: 100svh;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: #080a0b;
+        box-shadow: none;
+      }
+      .iphone::before { display: none; }
+      .iphone-screen { border-radius: 0; }
+      .side-power { right: 0; width: 20px; border-radius: 7px 0 0 7px; }
+      .app-page, .mini-app-page { width: calc(100% - 30px); }
+      .app-page .search-panel { align-items: stretch; flex-direction: column; }
+      .app-page .search-panel .button { width: 100%; }
+      .app-page footer { flex-direction: column; }
+    }
+
+    @media (max-width: 360px) {
+      .home-screen { padding-right: 17px; padding-left: 17px; }
+      .app-glyph { width: 51px; height: 51px; border-radius: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-stage">
+    <div id="iphone" class="iphone" data-state="off">
+      <button id="power-button" class="side-power" type="button" aria-label="Slå på telefonen" aria-pressed="false" title="På / av"></button>
+      <div class="iphone-screen">
+        <section class="screen-off" aria-label="Telefonen er slått av">
+          <div class="off-time" id="off-time">09:41</div>
+          <div class="off-date" id="off-date">God dag fra Halden</div>
+          <div class="off-brand">Halden · Norge</div>
+          <div class="off-hint">Trykk på sideknappen for å slå på</div>
+        </section>
+
+        <section id="home-screen" class="home-screen" aria-label="iPhone-hjemskjerm">
+          <div class="status-bar">
+            <span id="home-clock">09:41</span>
+            <span class="dynamic-island" aria-hidden="true"></span>
+            <span class="status-icons" aria-label="Mobilnett, Wi-Fi og batteri">▮▮▮ ◉ ▰</span>
+          </div>
+          <div class="home-welcome">
+            <div class="home-greeting">Velkommen tilbake til</div>
+            <div class="home-title">Halden</div>
+            <div class="home-weather"><span aria-hidden="true">☀️</span> En fin dag i byen</div>
+          </div>
+          <div class="app-grid">
+            <button class="app-icon bus-app" id="open-bus-app" type="button" aria-label="Åpne Halden Bussene">
+              <span class="app-glyph" aria-hidden="true">🚌</span><span class="app-label">Halden Bussene</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Kamera, demo-app">
+              <span class="app-glyph" aria-hidden="true">📷</span><span class="app-label">Kamera</span>
+            </button>
+            <button class="app-icon" type="button" data-app="map" aria-label="Åpne Kart">
+              <span class="app-glyph" aria-hidden="true">🗺️</span><span class="app-label">Kart</span>
+            </button>
+            <button class="app-icon" type="button" data-app="music" aria-label="Åpne Musikk">
+              <span class="app-glyph" aria-hidden="true">🎵</span><span class="app-label">Musikk</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Meldinger, demo-app">
+              <span class="app-glyph" aria-hidden="true">💬</span><span class="app-label">Meldinger</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Bilder, demo-app">
+              <span class="app-glyph" aria-hidden="true">🌈</span><span class="app-label">Bilder</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Skoleplan, demo-app">
+              <span class="app-glyph" aria-hidden="true">📚</span><span class="app-label">Skoleplan</span>
+            </button>
+            <button class="app-icon" type="button" data-app="calendar" aria-label="Åpne Kalender">
+              <span class="app-glyph" aria-hidden="true">📅</span><span class="app-label">Kalender</span>
+            </button>
+            <button class="app-icon" type="button" data-app="notes" aria-label="Åpne Notater">
+              <span class="app-glyph" aria-hidden="true">📝</span><span class="app-label">Notater</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Spill, demo-app">
+              <span class="app-glyph" aria-hidden="true">🎮</span><span class="app-label">Spill</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Lommelykt, demo-app">
+              <span class="app-glyph" aria-hidden="true">🔦</span><span class="app-label">Lommelykt</span>
+            </button>
+            <button class="app-icon" type="button" aria-label="Innstillinger, demo-app">
+              <span class="app-glyph" aria-hidden="true">⚙️</span><span class="app-label">Innstillinger</span>
+            </button>
+          </div>
+          <div class="home-spacer"></div>
+          <div class="dock" aria-label="Favorittapper">
+            <button class="app-icon" type="button" aria-label="Telefon, demo-app"><span class="app-glyph" aria-hidden="true">📞</span><span class="app-label">Telefon</span></button>
+            <button class="app-icon" type="button" aria-label="Safari, demo-app"><span class="app-glyph" aria-hidden="true">🧭</span><span class="app-label">Safari</span></button>
+            <button class="app-icon" type="button" data-app="weather" aria-label="Åpne Haldenvær"><span class="app-glyph" aria-hidden="true">🌦️</span><span class="app-label">Haldenvær</span></button>
+            <button class="app-icon" type="button" aria-label="E-post, demo-app"><span class="app-glyph" aria-hidden="true">✉️</span><span class="app-label">E-post</span></button>
+          </div>
+        </section>
+
+        <section id="app-view" class="app-view" aria-label="Halden Bussene">
+          <div class="app-statusbar">
+            <button id="app-back" type="button" aria-label="Tilbake til hjemskjermen">‹ Hjem</button>
+            <span id="app-title">Halden Bussene</span>
+            <span class="app-status-right">
+              <span id="app-clock">09:41</span>
+              <span class="app-status-icons" aria-label="Mobilnett, Wi-Fi og batteri">▮▮▮ ◉ ▰</span>
+            </span>
+          </div>
+          <div id="app-page" class="page app-page">
+    <main>
+      <p class="eyebrow">Buss i Halden</p>
+      <h1>Når går bussen?</h1>
+      <p class="intro">Finn neste avganger fra Halden bussterminal eller andre holdeplasser i byen. Se linjenummer, hvor bussen skal, rutetid og eventuelle forsinkelser.</p>
+
+      <section class="search-panel" aria-label="Velg bussholdeplass">
+        <div class="search-field">
+          <label for="stop-search">Fra hvilken holdeplass?</label>
+          <div class="input-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="stop-search" type="search" autocomplete="off" placeholder="Søk etter holdeplass eller stedsnavn" aria-describedby="search-help" aria-controls="suggestions">
+          <div id="suggestions" class="suggestions" role="listbox" hidden></div>
+          <span id="search-help" class="sr-only">Søk etter en holdeplass i Halden og velg et forslag.</span>
+        </div>
+        <button id="refresh" class="button primary" type="button">↻ &nbsp; Oppdater avganger</button>
+      </section>
+
+      <section aria-labelledby="selected-stop-name">
+        <div class="stop-summary">
+          <div class="stop-title">
+            <div class="stop-marker" aria-hidden="true">⌖</div>
+            <div>
+              <h2 id="selected-stop-name">Halden bussterminal</h2>
+              <div id="selected-stop-area" class="stop-subtitle">Avganger fra valgt holdeplass</div>
+            </div>
+          </div>
+          <div id="status" class="status" aria-live="polite">Henter avganger …</div>
+        </div>
+        <div id="departures" class="departure-list" aria-live="polite" aria-busy="true">
+          <div class="message-card">Henter rutetider og sanntidsinformasjon …</div>
+        </div>
+      </section>
+
+      <section class="info" aria-label="Om rutetidene">
+        <div class="info-card"><strong>Rutetid</strong><span>Planlagt avgang fra holdeplassen, vist med dagens dato.</span></div>
+        <div class="info-card"><strong>Forsinkelse</strong><span>Når sanntidsdata er tilgjengelig, vises forventet tid og avvik fra rutetiden.</span></div>
+        <div class="info-card"><strong>Stopp langs ruta</strong><span>Trykk «Vis stopp» på en avgang for å se holdeplassene bussen kjører innom.</span></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Rutetider og sanntid fra <a href="https://entur.no/" target="_blank" rel="noreferrer">Entur</a>.</span>
+      <span>Sanntidsdata kan mangle for enkelte avganger. Sjekk skilting på holdeplassen ved avvik.</span>
+    </footer>
+  </div>
+  <div id="mini-app-page" class="mini-app-page" hidden></div>
+  <button id="home-button" class="app-home" type="button" aria-label="Tilbake til appmenyen" title="Til appmenyen"><span aria-hidden="true">⌂</span> Hjem</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://api.entur.io/journey-planner/v3/graphql";
+    const GEOCODER_URL = "https://api.entur.io/geocoder/v1/autocomplete";
+    const CLIENT_NAME = "halden-bus-web";
+    const initialStop = {
+      id: "NSR:StopPlace:2562",
+      name: "Halden bussterminal",
+      area: "Halden"
+    };
+    let selectedStop = initialStop;
+    let searchTimer;
+    let searchController;
+    let requestController;
+    let requestNumber = 0;
+
+    const byId = (id) => document.getElementById(id);
+    const busHeaders = { "ET-Client-Name": CLIENT_NAME };
+
+    function timeAt(value) {
+      if (!value) return "--:--";
+      return new Intl.DateTimeFormat("no-NO", {
+        hour: "2-digit", minute: "2-digit", timeZone: "Europe/Oslo"
+      }).format(new Date(value));
+    }
+
+    function dayAt(value) {
+      return new Intl.DateTimeFormat("no-NO", {
+        weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Oslo"
+      }).format(new Date(value));
+    }
+
+    function delayInMinutes(aimed, expected) {
+      return Math.round((new Date(expected).getTime() - new Date(aimed).getTime()) / 60000);
+    }
+
+    async function graphql(query, signal) {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { ...busHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+        signal
+      });
+      if (!response.ok) throw new Error(`Entur svarte med HTTP ${response.status}`);
+      const result = await response.json();
+      if (result.errors?.length) throw new Error(result.errors.map((error) => error.message).join("; "));
+      return result.data;
+    }
+
+    function renderDepartures(calls) {
+      const container = byId("departures");
+      container.replaceChildren();
+      if (!calls.length) {
+        container.innerHTML = '<div class="message-card">Ingen avganger er publisert fra denne holdeplassen i det neste døgnet.</div>';
+        return;
+      }
+
+      for (const [index, call] of calls.entries()) {
+        const aimed = call.aimedDepartureTime;
+        const expected = call.expectedDepartureTime || aimed;
+        const minutesLate = delayInMinutes(aimed, expected);
+        const delayed = call.realtime && minutesLate > 0;
+        const early = call.realtime && minutesLate < 0;
+        const destination = call.destinationDisplay?.frontText || "Ukjent retning";
+        const line = call.serviceJourney?.journeyPattern?.line || {};
+        const quays = call.serviceJourney?.journeyPattern?.quays || [];
+        const row = document.createElement("article");
+        row.className = "departure";
+        row.innerHTML = `
+          <div class="departure-main">
+            <div class="line-number"></div>
+            <div class="route">
+              <div class="destination"></div>
+              <div class="route-name"></div>
+            </div>
+            <div class="times">
+              <div class="time-block">
+                <span class="time-label">Rutetid</span>
+                <span class="time-value aimed"></span>
+              </div>
+              <span class="time-arrow" aria-hidden="true">→</span>
+              <div class="time-block expected-block">
+                <span class="time-label">Forventet</span>
+                <span class="time-value expected"></span>
+              </div>
+            </div>
+          </div>
+          <div class="departure-meta">
+            <div class="departure-meta-left">
+              <span class="badge"></span>
+              <span class="day-label"></span>
+            </div>
+            <button type="button" class="stops-toggle" aria-expanded="false">Vis stopp</button>
+          </div>
+          <div class="stops-route" hidden></div>`;
+
+        row.querySelector(".line-number").textContent = line.publicCode || "—";
+        row.querySelector(".destination").textContent = destination;
+        row.querySelector(".route-name").textContent = line.name || "Buss";
+        row.querySelector(".aimed").textContent = timeAt(aimed);
+        row.querySelector(".expected").textContent = timeAt(expected);
+        row.querySelector(".day-label").textContent = dayAt(aimed);
+        const expectedBlock = row.querySelector(".expected-block");
+        const badge = row.querySelector(".badge");
+        if (!call.realtime) {
+          expectedBlock.hidden = true;
+          badge.className = "badge scheduled";
+          badge.textContent = "Rutetime · ikke sanntid";
+        } else if (delayed) {
+          badge.className = "badge delayed";
+          badge.textContent = `Forsinket ${minutesLate} min`;
+        } else if (early) {
+          badge.className = "badge";
+          badge.textContent = `${Math.abs(minutesLate)} min tidligere enn rutetid`;
+        } else {
+          badge.className = "badge";
+          badge.textContent = "I rute";
+        }
+
+        const route = row.querySelector(".stops-route");
+        if (quays.length) {
+          quays.forEach((quay, stopIndex) => {
+            const stop = document.createElement("span");
+            stop.className = `route-stop${stopIndex === 0 ? " selected" : ""}`;
+            stop.innerHTML = '<span class="route-stop-dot" aria-hidden="true"></span><span></span>';
+            stop.querySelector("span:last-child").textContent = quay.name || "Holdeplass";
+            route.append(stop);
+          });
+        } else {
+          route.textContent = "Stoppestedene på ruta er ikke tilgjengelige.";
+        }
+
+        const toggle = row.querySelector(".stops-toggle");
+        toggle.setAttribute("aria-controls", `route-stops-${index}`);
+        route.id = `route-stops-${index}`;
+        toggle.addEventListener("click", () => {
+          const opening = route.hidden;
+          route.hidden = !opening;
+          toggle.setAttribute("aria-expanded", String(opening));
+          toggle.textContent = opening ? "Skjul stopp" : "Vis stopp";
+        });
+        container.append(row);
+      }
+    }
+
+    async function loadDepartures() {
+      const currentRequest = ++requestNumber;
+      if (requestController) requestController.abort();
+      requestController = new AbortController();
+      const button = byId("refresh");
+      button.disabled = true;
+      byId("status").className = "status";
+      byId("status").textContent = "Henter avganger …";
+      byId("departures").setAttribute("aria-busy", "true");
+      byId("departures").innerHTML = '<div class="message-card">Henter rutetider og sanntidsinformasjon …</div>';
+      const stop = selectedStop;
+      const query = `{
+        stopPlace(id: "${stop.id}") {
+          id
+          name
+          estimatedCalls(numberOfDepartures: 20, timeRange: 86400) {
+            aimedDepartureTime
+            expectedDepartureTime
+            realtime
+            destinationDisplay { frontText }
+            serviceJourney {
+              journeyPattern {
+                line { publicCode name }
+                quays { name }
+              }
+            }
+          }
+        }
+      }`;
+      try {
+        const data = await graphql(query, requestController.signal);
+        if (currentRequest !== requestNumber) return;
+        const stopPlace = data.stopPlace;
+        if (!stopPlace) throw new Error("Holdeplassen finnes ikke i rutetidsdatabasen.");
+        byId("selected-stop-name").textContent = stopPlace.name;
+        byId("selected-stop-area").textContent = `Avganger fra ${stopPlace.name}`;
+        const calls = [...(stopPlace.estimatedCalls || [])]
+          .sort((a, b) => new Date(a.aimedDepartureTime) - new Date(b.aimedDepartureTime));
+        renderDepartures(calls);
+        byId("status").textContent = `Neste ${calls.length} avganger · oppdatert kl. ${timeAt(new Date().toISOString())}`;
+      } catch (error) {
+        if (error.name === "AbortError" || currentRequest !== requestNumber) return;
+        byId("status").className = "status error";
+        byId("status").textContent = "Kunne ikke hente avgangene";
+        byId("departures").innerHTML = '<div class="message-card error">Vi fikk ikke kontakt med rutetidsdataene. Kontroller internettforbindelsen og prøv igjen.</div>';
+        console.error(`Kunne ikke hente avganger for ${stop.name}`, error);
+      } finally {
+        if (currentRequest === requestNumber) {
+          byId("departures").setAttribute("aria-busy", "false");
+          button.disabled = false;
+        }
+      }
+    }
+
+    function showSuggestions(features) {
+      const box = byId("suggestions");
+      box.replaceChildren();
+      const haldenStops = features.filter((feature) =>
+        feature.properties?.id?.startsWith("NSR:StopPlace:")
+        && feature.properties?.locality?.toLocaleLowerCase("no") === "halden"
+      );
+      if (!haldenStops.length) {
+        const message = document.createElement("div");
+        message.className = "suggestion-message";
+        message.textContent = "Fant ingen holdeplasser i Halden. Prøv et annet søkeord.";
+        box.append(message);
+      } else {
+        haldenStops.slice(0, 7).forEach((feature) => {
+          const props = feature.properties;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "suggestion";
+          button.setAttribute("role", "option");
+          button.innerHTML = '<span class="suggestion-name"></span><span class="suggestion-area"></span>';
+          button.querySelector(".suggestion-name").textContent = props.name;
+          button.querySelector(".suggestion-area").textContent = props.label || "Halden";
+          button.addEventListener("click", () => {
+            selectedStop = { id: props.id, name: props.name, area: props.locality };
+            byId("stop-search").value = props.name;
+            box.hidden = true;
+            loadDepartures();
+          });
+          box.append(button);
+        });
+      }
+      box.hidden = false;
+    }
+
+    byId("stop-search").addEventListener("input", (event) => {
+      const query = event.target.value.trim();
+      clearTimeout(searchTimer);
+      if (searchController) searchController.abort();
+      if (query.length < 2) {
+        byId("suggestions").hidden = true;
+        return;
+      }
+      searchTimer = setTimeout(async () => {
+        searchController = new AbortController();
+        const params = new URLSearchParams({
+          text: query,
+          lang: "no",
+          layers: "venue",
+          "boundary.gid": "whosonfirst:locality:KVE:TopographicPlace:3101"
+        });
+        const box = byId("suggestions");
+        box.innerHTML = '<div class="suggestion-message">Søker etter holdeplasser …</div>';
+        box.hidden = false;
+        try {
+          const response = await fetch(`${GEOCODER_URL}?${params}`, {
+            headers: busHeaders,
+            signal: searchController.signal
+          });
+          if (!response.ok) throw new Error(`Entur svarte med HTTP ${response.status}`);
+          const result = await response.json();
+          showSuggestions(result.features || []);
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          box.innerHTML = '<div class="suggestion-message">Kunne ikke søke etter holdeplasser akkurat nå.</div>';
+          box.hidden = false;
+          console.error("Kunne ikke søke etter holdeplasser i Halden", error);
+        }
+      }, 300);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".search-field")) byId("suggestions").hidden = true;
+    });
+    byId("refresh").addEventListener("click", loadDepartures);
+    const iphone = byId("iphone");
+
+    function setPhoneState(state) {
+      iphone.dataset.state = state;
+      const isOn = state !== "off";
+      byId("power-button").setAttribute("aria-label", isOn ? "Slå av telefonen" : "Slå på telefonen");
+      byId("power-button").setAttribute("aria-pressed", String(isOn));
+      if (state === "app" && iphone.dataset.activeApp === "bus" && !iphone.dataset.appLoaded) {
+        iphone.dataset.appLoaded = "true";
+        loadDepartures();
+      }
+    }
+
+    const miniApps = {
+      bus: { title: "Halden Bussene", emoji: "🚌" },
+      map: { title: "Kart", emoji: "🗺️" },
+      music: { title: "Musikk", emoji: "🎵" },
+      calendar: { title: "Kalender", emoji: "📅" },
+      notes: { title: "Notater", emoji: "📝" },
+      weather: { title: "Haldenvær", emoji: "🌦️" }
+    };
+
+    function renderMiniApp(app) {
+      const page = byId("mini-app-page");
+      const details = miniApps[app];
+      byId("app-title").textContent = details.title;
+      byId("app-view").setAttribute("aria-label", details.title);
+      byId("app-page").hidden = app !== "bus";
+      page.hidden = app === "bus";
+      if (app === "bus") {
+        byId("app-title").textContent = "Halden Bussene";
+        byId("app-view").setAttribute("aria-label", "Halden Bussene");
+        return;
+      }
+
+      const headers = {
+        map: '<p class="mini-eyebrow">Utforsk byen</p><h1>Kart over Halden</h1><p class="mini-description">Snarveier til steder i Halden. Trykk på et sted for å åpne kartet.</p><button id="map-home" class="mini-action secondary" type="button">‹ Tilbake til appene</button><div class="mini-card" id="map-places"></div><div class="mini-card"><strong>Reiseplanlegger</strong><p class="mini-muted">Planlegg en reise med buss, tog eller til fots fra Halden.</p><a class="mini-action" href="https://entur.no/reiseplanlegger" target="_blank" rel="noreferrer">Åpne Entur</a></div>',
+        music: '<p class="mini-eyebrow">Din lokale spiller</p><h1>Halden Mix</h1><p class="mini-description">En liten musikkspiller-demo. Knappene styrer avspillingsvisningen.</p><div class="mini-card mini-player"><div id="music-art" class="mini-track" aria-hidden="true">♫</div><h2 id="track-title">Sommer over Halden</h2><p id="track-subtitle" class="mini-muted">Halden spilleliste · demomodus</p><button id="music-toggle" class="mini-action" type="button">▶ Spill av</button><button id="music-next" class="mini-action secondary" type="button">Neste låt ↗</button><p id="music-status" class="mini-muted" role="status">Spilleren er satt på pause. Ingen lyd spilles av.</p></div>',
+        calendar: '<p class="mini-eyebrow">Planer og påminnelser</p><h1>Kalender</h1><p class="mini-description">Legg inn egne påminnelser. De lagres på denne enheten.</p><div class="mini-card"><strong id="calendar-date"></strong><p class="mini-muted">Dine kommende planer</p><div id="calendar-events" class="mini-events"></div></div><form id="calendar-form" class="mini-card"><label for="event-title">Ny påminnelse</label><input id="event-title" type="text" maxlength="70" placeholder="For eksempel: Ta bussen hjem" required><label for="event-time" style="margin-top:12px">Dato og klokkeslett</label><input id="event-time" type="datetime-local" required><button class="mini-action" type="submit" style="margin-top:12px">Legg til påminnelse</button><p id="calendar-status" class="mini-muted" role="status"></p></form>',
+        notes: '<p class="mini-eyebrow">Skriv det ned</p><h1>Notater</h1><p class="mini-description">Notatene lagres automatisk i nettleseren på denne enheten.</p><div class="mini-card"><label for="notes-text">Mitt notat</label><textarea id="notes-text" class="notes-area" maxlength="5000" placeholder="Skriv en huskeliste, en idé eller noe du vil huske …"></textarea><p id="notes-status" class="mini-muted" role="status">Lagret automatisk på denne enheten.</p><button id="notes-clear" class="mini-action secondary" type="button">Tøm notatet</button></div>',
+        weather: '<p class="mini-eyebrow">Vær akkurat nå</p><h1>Haldenvær</h1><p class="mini-description">Oppdatert værvarsel for Halden, hentet fra Open-Meteo.</p><div id="weather-content" class="mini-card"><span class="mini-muted">Henter værdata …</span></div><button id="weather-refresh" class="mini-action" type="button">Oppdater været</button><p class="mini-muted">Værdata fra Open-Meteo · modellvarsel kan avvike fra lokale forhold.</p>'
+      };
+
+      page.innerHTML = headers[app];
+      if (app === "map") setupMapApp();
+      if (app === "music") setupMusicApp();
+      if (app === "calendar") setupCalendarApp();
+      if (app === "notes") setupNotesApp();
+      if (app === "weather") {
+        byId("weather-refresh").addEventListener("click", loadHaldenWeather);
+        loadHaldenWeather();
+      }
+    }
+
+    function setupMapApp() {
+      byId("map-home").addEventListener("click", () => setPhoneState("home"));
+      const locations = [
+        { name: "Halden bussterminal", detail: "Sentrum · busser og rutetider", lat: 59.11959, lon: 11.38528 },
+        { name: "Halden stasjon", detail: "Jernbane og sentrumsbusser", lat: 59.12025, lon: 11.38436 },
+        { name: "Fredriksten festning", detail: "Utsikt over byen og fjorden", lat: 59.1204, lon: 11.4026 },
+        { name: "Remmen", detail: "Høgskolen og sykehuset", lat: 59.128, lon: 11.351 }
+      ];
+      const list = byId("map-places");
+      locations.forEach((place) => {
+        const row = document.createElement("div");
+        row.className = "mini-place";
+        const info = document.createElement("div");
+        const name = document.createElement("strong");
+        const detail = document.createElement("span");
+        name.textContent = place.name;
+        detail.textContent = place.detail;
+        info.append(name, detail);
+        const link = document.createElement("a");
+        link.href = `https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lon}#map=16/${place.lat}/${place.lon}`;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = "Vis kart ↗";
+        row.append(info, link);
+        list.append(row);
+      });
+    }
+
+    let musicTrack = 0;
+    let musicPlaying = false;
+    const tracks = [
+      { title: "Sommer over Halden", subtitle: "Byens favoritter" },
+      { title: "Langs Iddefjorden", subtitle: "Rolig morgenmix" },
+      { title: "Neste stopp: sentrum", subtitle: "På vei hjem" }
+    ];
+
+    function setupMusicApp() {
+      musicPlaying = false;
+      const update = () => {
+        byId("track-title").textContent = tracks[musicTrack].title;
+        byId("track-subtitle").textContent = `${tracks[musicTrack].subtitle} · demomodus`;
+        byId("music-toggle").textContent = musicPlaying ? "Ⅱ Sett på pause" : "▶ Spill av";
+        byId("music-status").textContent = musicPlaying
+          ? "Spiller i demomodus – ingen lyd er tilkoblet."
+          : "Spilleren er satt på pause. Ingen lyd spilles av.";
+        byId("music-art").textContent = musicPlaying ? "♫" : "♪";
+      };
+      byId("music-toggle").addEventListener("click", () => {
+        musicPlaying = !musicPlaying;
+        update();
+      });
+      byId("music-next").addEventListener("click", () => {
+        musicTrack = (musicTrack + 1) % tracks.length;
+        update();
+      });
+      update();
+    }
+
+    function readSavedEvents() {
+      try {
+        return JSON.parse(localStorage.getItem("halden-calendar-events") || "[]");
+      } catch (error) {
+        console.error("Kunne ikke lese kalenderpåminnelser", error);
+        return [];
+      }
+    }
+
+    function setupCalendarApp() {
+      byId("calendar-date").textContent = new Intl.DateTimeFormat("no-NO", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      }).format(new Date());
+      const list = byId("calendar-events");
+      const events = readSavedEvents()
+        .filter((event) => new Date(event.date).getTime() >= Date.now())
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      if (!events.length) {
+        const empty = document.createElement("p");
+        empty.className = "mini-muted";
+        empty.textContent = "Ingen påminnelser ennå. Legg til en påminnelse nedenfor.";
+        list.append(empty);
+      }
+      events.forEach((event) => {
+        const row = document.createElement("div");
+        row.className = "mini-event";
+        const date = document.createElement("time");
+        date.dateTime = event.date;
+        date.textContent = new Intl.DateTimeFormat("no-NO", {
+          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+        }).format(new Date(event.date));
+        const info = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = event.title;
+        const description = document.createElement("span");
+        description.textContent = "Personlig påminnelse";
+        info.append(title, description);
+        row.append(date, info);
+        list.append(row);
+      });
+      byId("calendar-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const title = byId("event-title").value.trim();
+        const date = byId("event-time").value;
+        if (!title || !date || new Date(date).getTime() < Date.now()) {
+          byId("calendar-status").textContent = "Skriv inn en tittel og velg et tidspunkt fram i tid.";
+          return;
+        }
+        try {
+          const updatedEvents = [...readSavedEvents(), { title, date }];
+          localStorage.setItem("halden-calendar-events", JSON.stringify(updatedEvents));
+          renderMiniApp("calendar");
+        } catch (error) {
+          byId("calendar-status").textContent = "Kunne ikke lagre påminnelsen i denne nettleseren.";
+          console.error("Kunne ikke lagre kalenderpåminnelse", error);
+        }
+      });
+    }
+
+    function setupNotesApp() {
+      const textarea = byId("notes-text");
+      try {
+        textarea.value = localStorage.getItem("halden-phone-note") || "";
+      } catch (error) {
+        byId("notes-status").textContent = "Lagring er ikke tilgjengelig i denne nettleseren.";
+        console.error("Kunne ikke lese notatet", error);
+      }
+      textarea.addEventListener("input", () => {
+        try {
+          localStorage.setItem("halden-phone-note", textarea.value);
+          byId("notes-status").textContent = "Lagret automatisk på denne enheten.";
+        } catch (error) {
+          byId("notes-status").textContent = "Kunne ikke lagre notatet i denne nettleseren.";
+          console.error("Kunne ikke lagre notatet", error);
+        }
+      });
+      byId("notes-clear").addEventListener("click", () => {
+        textarea.value = "";
+        textarea.dispatchEvent(new Event("input"));
+      });
+    }
+
+    const weatherDescriptions = {
+      0: ["Klart", "☀️"], 1: ["For det meste klart", "🌤️"], 2: ["Delvis skyet", "⛅"],
+      3: ["Overskyet", "☁️"], 45: ["Tåke", "🌫️"], 48: ["Tåke", "🌫️"],
+      51: ["Lett yr", "🌦️"], 53: ["Yr", "🌦️"], 55: ["Kraftig yr", "🌧️"],
+      61: ["Lett regn", "🌧️"], 63: ["Regn", "🌧️"], 65: ["Kraftig regn", "🌧️"],
+      71: ["Lett snø", "🌨️"], 73: ["Snø", "🌨️"], 75: ["Kraftig snø", "❄️"],
+      80: ["Regnbyger", "🌦️"], 81: ["Regnbyger", "🌧️"], 82: ["Kraftige regnbyger", "🌧️"],
+      95: ["Tordenvær", "⛈️"], 96: ["Tordenvær med hagl", "⛈️"], 99: ["Tordenvær med hagl", "⛈️"]
+    };
+
+    async function loadHaldenWeather() {
+      const content = byId("weather-content");
+      const button = byId("weather-refresh");
+      if (button) button.disabled = true;
+      content.textContent = "Henter oppdatert vær …";
+      try {
+        const params = new URLSearchParams({
+          latitude: "59.1203", longitude: "11.3875",
+          current: "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
+          timezone: "Europe/Oslo"
+        });
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+        if (!response.ok) throw new Error(`Open-Meteo svarte med HTTP ${response.status}`);
+        const data = await response.json();
+        const current = data.current;
+        const [description, icon] = weatherDescriptions[current.weather_code] || ["Ukjent vær", "🌡️"];
+        content.innerHTML = '<span class="mini-weather-icon" aria-hidden="true"></span><strong class="mini-muted">Halden sentrum · akkurat nå</strong><div class="mini-weather-temp"></div><div class="mini-muted"></div><div class="mini-stat-row"><div class="mini-stat"><span>Føles som</span><strong class="feels"></strong></div><div class="mini-stat"><span>Vind</span><strong class="wind"></strong></div><div class="mini-stat"><span>Luftfuktighet</span><strong class="humidity"></strong></div></div>';
+        content.querySelector(".mini-weather-icon").textContent = icon;
+        content.querySelector(".mini-weather-temp").textContent = `${Math.round(current.temperature_2m)}°`;
+        content.querySelector(".mini-weather-temp + .mini-muted").textContent = description;
+        content.querySelector(".feels").textContent = `${Math.round(current.apparent_temperature)}°`;
+        content.querySelector(".wind").textContent = `${Math.round(current.wind_speed_10m)} km/t`;
+        content.querySelector(".humidity").textContent = `${current.relative_humidity_2m}%`;
+      } catch (error) {
+        content.textContent = "Kunne ikke hente værdata akkurat nå. Kontroller internettforbindelsen og prøv igjen.";
+        console.error("Kunne ikke hente Haldenvær", error);
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openApp(app) {
+      iphone.dataset.activeApp = app;
+      renderMiniApp(app);
+      setPhoneState("app");
+      byId("app-view").scrollTop = 0;
+    }
+
+    function updatePhoneClock() {
+      const now = new Date();
+      const time = new Intl.DateTimeFormat("no-NO", {
+        hour: "2-digit", minute: "2-digit"
+      }).format(now);
+      byId("home-clock").textContent = time;
+      byId("app-clock").textContent = time;
+      byId("off-time").textContent = time;
+      byId("off-date").textContent = new Intl.DateTimeFormat("no-NO", {
+        weekday: "long", day: "numeric", month: "long"
+      }).format(now);
+    }
+
+    byId("power-button").addEventListener("click", () => {
+      setPhoneState(iphone.dataset.state === "off" ? "home" : "off");
+    });
+    byId("open-bus-app").addEventListener("click", () => openApp("bus"));
+    document.querySelectorAll("[data-app]").forEach((button) => {
+      button.addEventListener("click", () => openApp(button.dataset.app));
+    });
+    byId("home-button").addEventListener("click", () => setPhoneState("home"));
+    byId("app-back").addEventListener("click", () => setPhoneState("home"));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && iphone.dataset.state === "app") setPhoneState("home");
+    });
+
+    updatePhoneClock();
+    setInterval(updatePhoneClock, 1000);
+    setInterval(() => {
+      if (iphone.dataset.state === "app" && iphone.dataset.activeApp === "bus") loadDepartures();
+    }, 60_000);
+  </script>
+</body>
+</html>
